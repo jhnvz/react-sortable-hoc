@@ -48,7 +48,7 @@
     "clean:commonjs": "rimraf dist/commonjs",
     "storybook": "start-storybook -p 9001",
     "test": "eslint src/** --ext .js",
-    "postinstall": "npm run compile"
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@babel/runtime": "^7.2.0",
