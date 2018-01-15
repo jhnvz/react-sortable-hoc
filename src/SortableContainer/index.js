@@ -74,38 +74,33 @@ export default function sortableContainer(
       const {useWindowAsScrollContainer} = this.props;
       const container = this.getContainer();
 
-      Promise.resolve(container).then((containerNode) => {
-        this.container = containerNode;
-        this.document = this.container.ownerDocument || document;
+      /*
+       *  Set our own default rather than using defaultProps because Jest
+       *  snapshots will serialize window, causing a RangeError
+       *  https://github.com/clauderic/react-sortable-hoc/issues/249
+       */
 
-        /*
-         *  Set our own default rather than using defaultProps because Jest
-         *  snapshots will serialize window, causing a RangeError
-         *  https://github.com/clauderic/react-sortable-hoc/issues/249
-         */
-        const contentWindow =
-          this.props.contentWindow || this.document.defaultView || window;
+      this.container = typeof getContainer === 'function'
+        ? getContainer(this.getWrappedInstance())
+        : findDOMNode(this);
+      this.document = this.container.ownerDocument || document;
 
-        this.contentWindow =
-          typeof contentWindow === 'function' ? contentWindow() : contentWindow;
+      const contentWindow = this.props.contentWindow || this.document.defaultView || window;
 
-        this.scrollContainer = useWindowAsScrollContainer
-          ? this.document.scrollingElement || this.document.documentElement
-          : getScrollingParent(this.container) || this.container;
+      this.contentWindow = typeof contentWindow === 'function'
+        ? contentWindow()
+        : contentWindow;
+      this.scrollContainer = useWindowAsScrollContainer
+        ? this.document.scrollingElement || this.document.documentElement
+        : this.container;
 
-        this.autoScroller = new AutoScroller(
-          this.scrollContainer,
-          this.onAutoScroll,
-        );
-
-        Object.keys(this.events).forEach((key) =>
-          events[key].forEach((eventName) =>
-            this.container.addEventListener(eventName, this.events[key], false),
-          ),
-        );
-
-        this.container.addEventListener('keydown', this.handleKeyDown);
-      });
+      for (const key in this.events) {
+        if (this.events.hasOwnProperty(key)) {
+          events[key].forEach(eventName =>
+            this.container.addEventListener(eventName, this.events[key], false)
+          );
+        }
+      }
     }
 
     componentWillUnmount() {
@@ -296,8 +291,8 @@ export default function sortableContainer(
         }
 
         this.initialScroll = {
-          left: this.scrollContainer.scrollLeft,
-          top: this.scrollContainer.scrollTop,
+          top: this.container.scrollTop,
+          left: this.container.scrollLeft,
         };
 
         this.initialWindowScroll = {
@@ -626,10 +621,17 @@ export default function sortableContainer(
       const {transitionDuration, hideSortableGhost, onSortOver} = this.props;
       const {containerScrollDelta, windowScrollDelta} = this;
       const nodes = this.manager.getOrderedRefs();
+      const containerScrollDelta = {
+        left: this.container.scrollLeft - this.initialScroll.left,
+        top: this.container.scrollTop - this.initialScroll.top,
+      };
       const sortingOffset = {
-        left:
-          this.offsetEdge.left + this.translate.x + containerScrollDelta.left,
+        left: this.offsetEdge.left + this.translate.x + containerScrollDelta.left,
         top: this.offsetEdge.top + this.translate.y + containerScrollDelta.top,
+      };
+      const windowScrollDelta = {
+        top: (window.pageYOffset - this.initialWindowScroll.top),
+        left: (window.pageXOffset - this.initialWindowScroll.left),
       };
       const {isKeySorting} = this.manager;
 
@@ -713,14 +715,12 @@ export default function sortableContainer(
           if (this.axis.y) {
             // Calculations for a grid setup
             if (
-              mustShiftForward ||
-              (index < this.index &&
-                ((sortingOffset.left + windowScrollDelta.left - offset.width <=
-                  edgeOffset.left &&
-                  sortingOffset.top + windowScrollDelta.top <=
-                    edgeOffset.top + offset.height) ||
-                  sortingOffset.top + windowScrollDelta.top + offset.height <=
-                    edgeOffset.top))
+              index < this.index &&
+              (
+                ((sortingOffset.left + windowScrollDelta.left) - offset.width <= edgeOffset.left &&
+                (sortingOffset.top + windowScrollDelta.top) <= edgeOffset.top + offset.height) ||
+                (sortingOffset.top + windowScrollDelta.top) + offset.height <= edgeOffset.top
+              )
             ) {
               // If the current node is to the left on the same row, or above the node that's being dragged
               // then move it to the right
@@ -741,14 +741,12 @@ export default function sortableContainer(
                 this.newIndex = index;
               }
             } else if (
-              mustShiftBackward ||
-              (index > this.index &&
-                ((sortingOffset.left + windowScrollDelta.left + offset.width >=
-                  edgeOffset.left &&
-                  sortingOffset.top + windowScrollDelta.top + offset.height >=
-                    edgeOffset.top) ||
-                  sortingOffset.top + windowScrollDelta.top + offset.height >=
-                    edgeOffset.top + height))
+              index > this.index &&
+              (
+                ((sortingOffset.left + windowScrollDelta.left) + offset.width >= edgeOffset.left &&
+                (sortingOffset.top + windowScrollDelta.top) + offset.height >= edgeOffset.top) ||
+                (sortingOffset.top + windowScrollDelta.top) + offset.height >= edgeOffset.top + height
+              )
             ) {
               // If the current node is to the right on the same row, or below the node that's being dragged
               // then move it to the left
@@ -769,18 +767,14 @@ export default function sortableContainer(
             }
           } else {
             if (
-              mustShiftBackward ||
-              (index > this.index &&
-                sortingOffset.left + windowScrollDelta.left + offset.width >=
-                  edgeOffset.left)
+              index > this.index &&
+              (sortingOffset.left + windowScrollDelta.left) + offset.width >= edgeOffset.left
             ) {
               translate.x = -(this.width + this.marginOffset.x);
               this.newIndex = index;
             } else if (
-              mustShiftForward ||
-              (index < this.index &&
-                sortingOffset.left + windowScrollDelta.left <=
-                  edgeOffset.left + offset.width)
+              index < this.index &&
+              (sortingOffset.left + windowScrollDelta.left) <= edgeOffset.left + offset.width
             ) {
               translate.x = this.width + this.marginOffset.x;
 
@@ -791,18 +785,14 @@ export default function sortableContainer(
           }
         } else if (this.axis.y) {
           if (
-            mustShiftBackward ||
-            (index > this.index &&
-              sortingOffset.top + windowScrollDelta.top + offset.height >=
-                edgeOffset.top)
+            index > this.index &&
+            (sortingOffset.top + windowScrollDelta.top) + offset.height >= edgeOffset.top
           ) {
             translate.y = -(this.height + this.marginOffset.y);
             this.newIndex = index;
           } else if (
-            mustShiftForward ||
-            (index < this.index &&
-              sortingOffset.top + windowScrollDelta.top <=
-                edgeOffset.top + offset.height)
+            index < this.index &&
+            (sortingOffset.top + windowScrollDelta.top) <= edgeOffset.top + offset.height
           ) {
             translate.y = this.height + this.marginOffset.y;
             if (this.newIndex == null) {
