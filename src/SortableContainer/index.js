@@ -312,9 +312,15 @@ export default function sortableContainer(
           width: `${this.width}px`,
         });
 
-        if (isKeySorting) {
-          this.helper.focus();
-        }
+        this.helper = this.container.appendChild(clonedNode);
+
+        this.helper.style.position = 'fixed';
+        this.helper.style.top = `${this.boundingClientRect.top - margin.top}px`;
+        this.helper.style.left = `${this.boundingClientRect.left - margin.left}px`;
+        this.helper.style.width = `${this.width}px`;
+        this.helper.style.height = `${this.height}px`;
+        this.helper.style.boxSizing = 'border-box';
+        this.helper.style.pointerEvents = 'none';
 
         if (hideSortableGhost) {
           this.sortableGhost = node;
