@@ -296,6 +296,9 @@ export default function sortableContainer(WrappedComponent, config = {withRef: f
         });
 
         clonedNode.removeAttribute('data-reactid');
+        clonedNode.getElementsByTagName('*').forEach((node) => {
+          node.removeAttribute('data-reactid');
+        });
         console.log(clonedNode);
         this.helper = this.container.appendChild(clonedNode);
 
