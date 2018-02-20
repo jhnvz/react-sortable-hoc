@@ -214,6 +214,10 @@ function sortableContainer(WrappedComponent) {
           });
 
           clonedNode.removeAttribute('data-reactid');
+          clonedNode.getElementsByTagName('*').forEach(function (node) {
+            node.removeAttribute('data-reactid');
+          });
+          console.log(clonedNode);
           _this.helper = _this.container.appendChild(clonedNode);
 
           _this.helper.style.position = 'fixed';
