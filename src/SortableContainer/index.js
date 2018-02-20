@@ -295,6 +295,7 @@ export default function sortableContainer(WrappedComponent, config = {withRef: f
           }
         });
 
+        clonedNode.id = null;
         this.helper = this.container.appendChild(clonedNode);
 
         this.helper.style.position = 'fixed';
