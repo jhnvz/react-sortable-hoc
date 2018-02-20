@@ -965,7 +965,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	          for (var i = 0; i < children.length; i++) {
 	            children[i].removeAttribute('data-reactid');
 	          }
-	          console.log(clonedNode);
 	          _this.helper = _this.container.appendChild(clonedNode);
 
 	          _this.helper.style.position = 'fixed';
