@@ -185,7 +185,7 @@ export default function sortableContainer(WrappedComponent) {
             }
           });
 
-          _this.helper = _this.document.body.appendChild(clonedNode);
+          _this.helper = _this.container.appendChild(clonedNode);
 
           _this.helper.style.position = 'fixed';
           _this.helper.style.top = _this.boundingClientRect.top - margin.top + 'px';
