@@ -185,7 +185,7 @@ export default function sortableContainer(WrappedComponent) {
             }
           });
 
-          clonedNode.id = null;
+          clonedNode.removeAttribute('data-reactid');
           _this.helper = _this.container.appendChild(clonedNode);
 
           _this.helper.style.position = 'fixed';
