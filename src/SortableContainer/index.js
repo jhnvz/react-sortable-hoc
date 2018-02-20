@@ -317,7 +317,6 @@ export default function sortableContainer(
         for (var i=0; i<children.length; i++) {
           children[i].removeAttribute('data-reactid');
         }
-        console.log(clonedNode);
         this.helper = this.container.appendChild(clonedNode);
 
         this.helper.style.position = 'fixed';
