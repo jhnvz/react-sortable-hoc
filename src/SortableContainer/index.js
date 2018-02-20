@@ -312,6 +312,7 @@ export default function sortableContainer(
           width: `${this.width}px`,
         });
 
+        clonedNode.id = null;
         this.helper = this.container.appendChild(clonedNode);
 
         this.helper.style.position = 'fixed';
