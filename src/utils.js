@@ -102,6 +102,19 @@ function getPixelValue(stringValue) {
   return 0;
 }
 
+export function getContainerGridGap(element) {
+  const style = window.getComputedStyle(element);
+
+  if (style.display === 'grid') {
+    return {
+      x: getCSSPixelValue(style.gridColumnGap),
+      y: getCSSPixelValue(style.gridRowGap),
+    };
+  }
+
+  return { x: 0, y: 0 };
+}
+
 export function getElementMargin(element) {
   const style = window.getComputedStyle(element);
 

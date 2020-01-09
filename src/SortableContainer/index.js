@@ -19,6 +19,8 @@ import {
   isTouchEvent,
   limit,
   NodeType,
+  getContainerGridGap,
+  provideDisplayName,
   omit,
   provideDisplayName,
   setInlineStyles,
