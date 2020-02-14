@@ -258,13 +258,17 @@ export default function sortableContainer(
         // Need to get the latest value for `index` in case it changes during `updateBeforeSortStart`
         const {index} = node.sortableInfo;
         const margin = getElementMargin(node);
+
         const gridGap = getContainerGridGap(this.container);
         const containerBoundingRect = this.scrollContainer.getBoundingClientRect();
+
         const dimensions = getHelperDimensions({index, node, collection});
 
         this.node = node;
         this.margin = margin;
+
         this.gridGap = gridGap;
+
         this.width = dimensions.width;
         this.height = dimensions.height;
         this.marginOffset = {
